@@ -1,0 +1,13 @@
+node_modules/
+.env
+*.log
+.DS_Store
+firebase-service-account.json
+coverage/
+.vscode/
+.idea/
+dist/
+build/
+*.pid
+*.seed
+*.pid.lock
