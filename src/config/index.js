@@ -7,7 +7,7 @@ module.exports = {
   NODE_ENV: process.env.NODE_ENV || 'development',
 
   // MongoDB Config
-  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/safe_ride',
+  MONGODB_URI: process.env.MONGODB_URI || 'mongodb+srv://Vanya:vanyas1stapp@cluster0.0kajhts.mongodb.net/?appName=Cluster0',
   
   // JWT Config
   JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_key',
