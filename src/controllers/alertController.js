@@ -171,6 +171,118 @@ class AlertController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  /**
+   * Get notification history for alerts received by this user
+   * Shows alerts from emergency contacts where this user was notified
+   */
+  async getNotificationHistory(req, res) {
+    try {
+      const { page = 1, limit = 20, status } = req.query;
+      const userPhone = req.user.phoneNumber;
+
+      // Find alerts where this user's phone number is in the notificationsSent array
+      const query = {
+        'notificationsSent.contactPhoneNumber': userPhone,
+      };
+
+      // Filter by status if provided
+      if (status) {
+        query.status = status;
+      }
+
+      const alerts = await AccidentAlert.find(query)
+        .populate('userId', 'name phoneNumber')
+        .sort({ createdAt: -1 })
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .exec();
+
+      const count = await AccidentAlert.countDocuments(query);
+
+      // Format the response to include relevant notification details
+      const formattedAlerts = alerts.map(alert => ({
+        id: alert._id,
+        severity: alert.severity,
+        magnitude: alert.magnitude,
+        status: alert.status,
+        location: alert.location,
+        user: {
+          name: alert.userId.name,
+          phoneNumber: alert.userId.phoneNumber,
+        },
+        sentAt: alert.sentAt,
+        acknowledgedAt: alert.acknowledgedAt,
+        myNotification: alert.notificationsSent.find(n => n.contactPhoneNumber === userPhone),
+        createdAt: alert.createdAt,
+      }));
+
+      res.json({
+        success: true,
+        notifications: formattedAlerts,
+        totalPages: Math.ceil(count / limit),
+        currentPage: parseInt(page),
+        total: count,
+      });
+    } catch (error) {
+      console.error('Error in getNotificationHistory:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Get all notifications (sent and received)
+   */
+  async getAllNotifications(req, res) {
+    try {
+      const { page = 1, limit = 20 } = req.query;
+      const userPhone = req.user.phoneNumber;
+
+      // Find alerts where user is either the creator OR was notified
+      const sentAlerts = await AccidentAlert.find({ userId: req.userId })
+        .sort({ createdAt: -1 })
+        .limit(limit * 1)
+        .skip((page - 1) * limit);
+
+      const receivedAlerts = await AccidentAlert.find({
+        'notificationsSent.contactPhoneNumber': userPhone,
+      })
+        .populate('userId', 'name phoneNumber')
+        .sort({ createdAt: -1 })
+        .limit(limit * 1)
+        .skip((page - 1) * limit);
+
+      // Combine and sort
+      const allAlerts = [...sentAlerts, ...receivedAlerts]
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, limit);
+
+      const formatted = allAlerts.map(alert => ({
+        id: alert._id,
+        type: alert.userId.toString() === req.userId ? 'sent' : 'received',
+        severity: alert.severity,
+        magnitude: alert.magnitude,
+        status: alert.status,
+        location: alert.location,
+        user: alert.userId.name ? {
+          name: alert.userId.name,
+          phoneNumber: alert.userId.phoneNumber,
+        } : null,
+        sentAt: alert.sentAt,
+        acknowledgedAt: alert.acknowledgedAt,
+        createdAt: alert.createdAt,
+      }));
+
+      res.json({
+        success: true,
+        notifications: formatted,
+        currentPage: parseInt(page),
+      });
+    } catch (error) {
+      console.error('Error in getAllNotifications:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = new AlertController();
