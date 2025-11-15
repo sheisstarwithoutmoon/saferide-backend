@@ -57,6 +57,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    service: 'Safe Ride Backend API',
+    status: 'running',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      users: '/api/users/*',
+      alerts: '/api/alerts/*',
+    },
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({
