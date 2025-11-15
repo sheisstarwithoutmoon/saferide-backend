@@ -23,7 +23,9 @@ module.exports = {
   // Firebase Config
   FIREBASE: {
     projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKeyPath: process.env.FIREBASE_PRIVATE_KEY_PATH,
+    privateKeyPath: process.env.FIREBASE_PRIVATE_KEY_PATH || './firebase-service-account.json',
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
   },
 
   // Twilio Config
