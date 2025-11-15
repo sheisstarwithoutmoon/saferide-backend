@@ -14,6 +14,7 @@ router.post('/:alertId/acknowledge', alertController.acknowledgeAlert);
 router.put('/:alertId/location', alertController.updateLocation);
 
 // Notification history
+router.get('/notifications/sent', alertController.getSentNotifications);
 router.get('/notifications/received', alertController.getNotificationHistory);
 router.get('/notifications/all', alertController.getAllNotifications);
 

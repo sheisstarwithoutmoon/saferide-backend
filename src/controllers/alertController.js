@@ -182,8 +182,10 @@ class AlertController {
       const userPhone = req.user.phoneNumber;
 
       // Find alerts where this user's phone number is in the notificationsSent array
+      // AND the alert was NOT created by this user (exclude own alerts)
       const query = {
         'notificationsSent.contactPhoneNumber': userPhone,
+        userId: { $ne: req.userId }, // Exclude alerts created by this user
       };
 
       // Filter by status if provided
@@ -203,6 +205,7 @@ class AlertController {
       // Format the response to include relevant notification details
       const formattedAlerts = alerts.map(alert => ({
         id: alert._id,
+        type: 'received',
         severity: alert.severity,
         magnitude: alert.magnitude,
         status: alert.status,
@@ -246,6 +249,7 @@ class AlertController {
 
       const receivedAlerts = await AccidentAlert.find({
         'notificationsSent.contactPhoneNumber': userPhone,
+        userId: { $ne: req.userId }, // Exclude own alerts
       })
         .populate('userId', 'name phoneNumber')
         .sort({ createdAt: -1 })
@@ -280,6 +284,56 @@ class AlertController {
       });
     } catch (error) {
       console.error('Error in getAllNotifications:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Get sent notifications (alerts created by this user)
+   */
+  async getSentNotifications(req, res) {
+    try {
+      const { page = 1, limit = 20, status } = req.query;
+
+      const query = { userId: req.userId };
+
+      // Filter by status if provided
+      if (status) {
+        query.status = status;
+      }
+
+      const alerts = await AccidentAlert.find(query)
+        .sort({ createdAt: -1 })
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .exec();
+
+      const count = await AccidentAlert.countDocuments(query);
+
+      // Format the response
+      const formattedAlerts = alerts.map(alert => ({
+        id: alert._id,
+        type: 'sent',
+        severity: alert.severity,
+        magnitude: alert.magnitude,
+        status: alert.status,
+        location: alert.location,
+        sentAt: alert.sentAt,
+        cancelledAt: alert.cancelledAt,
+        acknowledgedAt: alert.acknowledgedAt,
+        notificationsSent: alert.notificationsSent,
+        createdAt: alert.createdAt,
+      }));
+
+      res.json({
+        success: true,
+        notifications: formattedAlerts,
+        totalPages: Math.ceil(count / limit),
+        currentPage: parseInt(page),
+        total: count,
+      });
+    } catch (error) {
+      console.error('Error in getSentNotifications:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
