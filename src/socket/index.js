@@ -9,7 +9,7 @@ class SocketHandler {
 
   setupSocketEvents() {
     this.io.on('connection', (socket) => {
-      console.log(`🔌 Client connected: ${socket.id}`);
+      console.log(`Client connected: ${socket.id}`);
 
       // Handle user authentication
       socket.on('authenticate', async (data) => {
@@ -48,7 +48,7 @@ class SocketHandler {
             name: user.name,
           });
 
-          console.log(`✅ User authenticated: ${user.phoneNumber} (${socket.id})`);
+          console.log(`User authenticated: ${user.phoneNumber} (${socket.id})`);
         } catch (error) {
           console.error('Socket authentication error:', error);
           socket.emit('error', { message: 'Authentication failed' });
@@ -183,10 +183,10 @@ class SocketHandler {
               user.socketId = null;
               await user.save();
 
-              console.log(`👋 User disconnected: ${user.phoneNumber} (${socket.id})`);
+              console.log(`User disconnected: ${user.phoneNumber} (${socket.id})`);
             }
           } else {
-            console.log(`👋 Client disconnected: ${socket.id}`);
+            console.log(`Client disconnected: ${socket.id}`);
           }
         } catch (error) {
           console.error('Disconnect handling error:', error);

@@ -1,15 +1,69 @@
 const User = require('../models/User');
+const { getFirebaseApp, admin } = require('../config/firebase');
 
 class UserController {
   /**
-   * Register or login user
+   * Register or login user (works with Firebase Auth)
+   * Client should authenticate with Firebase first, then call this with token
    */
   async registerOrLogin(req, res) {
     try {
-      const { phoneNumber, name, fcmToken } = req.body;
+      const { phoneNumber, name, fcmToken, firebaseToken } = req.body;
 
+      // Option 1: Using Firebase token (recommended)
+      if (firebaseToken) {
+        try {
+          getFirebaseApp();
+          const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
+          const verifiedPhone = decodedToken.phone_number;
+
+          if (!verifiedPhone) {
+            return res.status(400).json({ error: 'Phone number not found in Firebase token' });
+          }
+
+          // Find or create user
+          let user = await User.findOne({ phoneNumber: verifiedPhone });
+
+          if (!user) {
+            user = new User({
+              phoneNumber: verifiedPhone,
+              name: name || decodedToken.name || '',
+              fcmToken: fcmToken || null,
+              firebaseUid: decodedToken.uid,
+            });
+          } else {
+            // Update user info
+            if (fcmToken) user.fcmToken = fcmToken;
+            if (name) user.name = name;
+            if (!user.firebaseUid) user.firebaseUid = decodedToken.uid;
+          }
+
+          user.lastSeen = new Date();
+          await user.save();
+
+          return res.json({
+            success: true,
+            message: 'Authenticated with Firebase',
+            user: {
+              id: user._id,
+              phoneNumber: user.phoneNumber,
+              name: user.name,
+              emergencyContacts: user.emergencyContacts,
+              settings: user.settings,
+            },
+          });
+        } catch (firebaseError) {
+          console.error('Firebase token verification failed:', firebaseError);
+          return res.status(401).json({ error: 'Invalid Firebase token' });
+        }
+      }
+
+      // Option 2: Fallback to simple phone registration (backward compatibility)
       if (!phoneNumber) {
-        return res.status(400).json({ error: 'Phone number is required' });
+        return res.status(400).json({ 
+          error: 'Phone number or Firebase token is required',
+          hint: 'Use Firebase Authentication on client side and send firebaseToken'
+        });
       }
 
       // Find or create user
@@ -32,6 +86,7 @@ class UserController {
 
       res.json({
         success: true,
+        message: 'Registered without Firebase Auth (less secure)',
         user: {
           id: user._id,
           phoneNumber: user.phoneNumber,

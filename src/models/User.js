@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  firebaseUid: {
+    type: String,
+    sparse: true, // Allow null but ensure uniqueness if present
+    unique: true,
+  },
   emergencyContacts: [{
     phoneNumber: {
       type: String,
@@ -87,6 +92,7 @@ userSchema.pre('save', function(next) {
 
 // Indexes
 userSchema.index({ phoneNumber: 1 });
+userSchema.index({ firebaseUid: 1 });
 userSchema.index({ fcmToken: 1 });
 userSchema.index({ 'emergencyContacts.phoneNumber': 1 });
 

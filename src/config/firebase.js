@@ -15,7 +15,7 @@ const initializeFirebase = () => {
 
     // Check if using environment variables (for production/Render)
     if (config.FIREBASE.clientEmail && config.FIREBASE.privateKey) {
-      console.log('🔧 Using Firebase credentials from environment variables');
+      console.log('Using Firebase credentials from environment variables');
       
       credential = admin.credential.cert({
         projectId: config.FIREBASE.projectId,
@@ -25,7 +25,7 @@ const initializeFirebase = () => {
     } 
     // Check if service account file exists (for local development)
     else if (config.FIREBASE.privateKeyPath && fs.existsSync(path.resolve(config.FIREBASE.privateKeyPath))) {
-      console.log('🔧 Using Firebase credentials from file');
+      console.log('Using Firebase credentials from file');
       const serviceAccount = require(path.resolve(config.FIREBASE.privateKeyPath));
       credential = admin.credential.cert(serviceAccount);
     } 
@@ -38,10 +38,10 @@ const initializeFirebase = () => {
       projectId: config.FIREBASE.projectId,
     });
 
-    console.log('✅ Firebase Admin SDK initialized');
+    console.log('Firebase Admin SDK initialized');
     return firebaseApp;
   } catch (error) {
-    console.error('❌ Error initializing Firebase:', error.message);
+    console.error('Error initializing Firebase:', error.message);
     throw error;
   }
 };

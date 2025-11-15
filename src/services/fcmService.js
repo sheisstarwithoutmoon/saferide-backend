@@ -35,10 +35,10 @@ class FCMService {
       };
 
       const response = await admin.messaging().send(message);
-      console.log('✅ FCM notification sent:', response);
+      console.log('FCM notification sent:', response);
       return { success: true, messageId: response };
     } catch (error) {
-      console.error('❌ Error sending FCM notification:', error);
+      console.error('Error sending FCM notification:', error);
       throw error;
     }
   }
@@ -69,7 +69,7 @@ class FCMService {
       };
 
       const response = await admin.messaging().sendMulticast(message);
-      console.log(`✅ FCM notifications sent: ${response.successCount}/${fcmTokens.length}`);
+      console.log(`FCM notifications sent: ${response.successCount}/${fcmTokens.length}`);
       
       // Handle failed tokens
       if (response.failureCount > 0) {
@@ -77,7 +77,7 @@ class FCMService {
         response.responses.forEach((resp, idx) => {
           if (!resp.success) {
             failedTokens.push(fcmTokens[idx]);
-            console.error(`❌ Failed to send to token ${idx}:`, resp.error);
+            console.error(`Failed to send to token ${idx}:`, resp.error);
           }
         });
         return { success: true, failedTokens };
@@ -85,7 +85,7 @@ class FCMService {
 
       return { success: true, failedTokens: [] };
     } catch (error) {
-      console.error('❌ Error sending multicast FCM notification:', error);
+      console.error('Error sending multicast FCM notification:', error);
       throw error;
     }
   }
@@ -95,7 +95,7 @@ class FCMService {
    */
   async sendEmergencyAlert(fcmToken, alertData) {
     const notification = {
-      title: '🚨 EMERGENCY ALERT!',
+      title: 'EMERGENCY ALERT!',
       body: `${alertData.userName || 'Someone'} may have been in an accident. Immediate assistance needed!`,
     };
 
@@ -137,7 +137,7 @@ class FCMService {
    */
   async sendAlertCancelled(fcmToken, alertData) {
     const notification = {
-      title: '✅ Alert Cancelled',
+      title: 'Alert Cancelled',
       body: `${alertData.userName || 'User'} has cancelled the emergency alert. They are safe.`,
     };
 

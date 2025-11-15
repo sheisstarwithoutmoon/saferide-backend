@@ -109,7 +109,7 @@ const startServer = async () => {
     try {
       initializeFirebase();
     } catch (firebaseError) {
-      console.warn('⚠️  Firebase initialization failed. FCM notifications will not work.');
+      console.warn('Firebase initialization failed. FCM notifications will not work.');
       console.warn('   Continuing without Firebase...');
     }
 
@@ -121,13 +121,13 @@ const startServer = async () => {
       console.log('');
       console.log('╔══════════════════════════════════════════════╗');
       console.log('║                                              ║');
-      console.log('║      🚗 Safe Ride Backend Server Started    ║');
+      console.log('║      Safe Ride Backend Server Started        ║');
       console.log('║                                              ║');
       console.log('╚══════════════════════════════════════════════╝');
       console.log('');
-      console.log(`🌐 Server:     http://${config.HOST}:${config.PORT}`);
-      console.log(`📡 Socket.IO:  ws://${config.HOST}:${config.PORT}`);
-      console.log(`🔧 Environment: ${config.NODE_ENV}`);
+      console.log(`Server:     http://${config.HOST}:${config.PORT}`);
+      console.log(`Socket.IO:  ws://${config.HOST}:${config.PORT}`);
+      console.log(`Environment: ${config.NODE_ENV}`);
       console.log('');
       console.log('API Endpoints:');
       console.log(`  POST   /api/users/register`);
@@ -137,35 +137,35 @@ const startServer = async () => {
       console.log(`  POST   /api/alerts/:id/cancel`);
       console.log('');
       console.log('Socket.IO Events:');
-      console.log(`  📤 emit: authenticate, location:update, emergency:create`);
-      console.log(`  📥 on:   authenticated, emergency:alert, location_update`);
+      console.log(`  emit: authenticate, location:update, emergency:create`);
+      console.log(`  on:   authenticated, emergency:alert, location_update`);
       console.log('');
       console.log('═══════════════════════════════════════════════');
     });
 
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 };
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  console.error('💥 Uncaught Exception:', error);
+  console.error('Uncaught Exception:', error);
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (error) => {
-  console.error('💥 Unhandled Rejection:', error);
+  console.error('Unhandled Rejection:', error);
   process.exit(1);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('👋 SIGTERM received. Shutting down gracefully...');
+  console.log('SIGTERM received. Shutting down gracefully...');
   server.close(() => {
-    console.log('✅ Server closed');
+    console.log('Server closed');
     process.exit(0);
   });
 });

@@ -18,10 +18,10 @@ class SMSService {
         to: to,
       });
 
-      console.log(`✅ SMS sent to ${to}: ${result.sid}`);
+      console.log(`SMS sent to ${to}: ${result.sid}`);
       return { success: true, messageId: result.sid, status: result.status };
     } catch (error) {
-      console.error(`❌ Error sending SMS to ${to}:`, error.message);
+      console.error(`Error sending SMS to ${to}:`, error.message);
       throw error;
     }
   }
@@ -34,7 +34,7 @@ class SMSService {
       ? `https://maps.google.com/?q=${alertData.latitude},${alertData.longitude}`
       : 'Location unavailable';
 
-    const message = `🚨 EMERGENCY ALERT!
+    const message = `EMERGENCY ALERT!
 
 ${alertData.userName || 'Someone'} may have been in an accident!
 
@@ -53,7 +53,7 @@ Please check on them immediately!
    * Send alert cancelled SMS
    */
   async sendAlertCancelledSMS(to, alertData) {
-    const message = `✅ ALERT CANCELLED
+    const message = `ALERT CANCELLED
 
 ${alertData.userName || 'User'} has cancelled the emergency alert. They are safe.
 
@@ -76,7 +76,7 @@ Time: ${new Date().toLocaleString()}
       const successful = results.filter(r => r.status === 'fulfilled').length;
       const failed = results.filter(r => r.status === 'rejected').length;
 
-      console.log(`📊 SMS Batch: ${successful} sent, ${failed} failed`);
+      console.log(`SMS Batch: ${successful} sent, ${failed} failed`);
       
       return {
         successful,
@@ -88,7 +88,7 @@ Time: ${new Date().toLocaleString()}
         })),
       };
     } catch (error) {
-      console.error('❌ Error in batch SMS:', error);
+      console.error('Error in batch SMS:', error);
       throw error;
     }
   }

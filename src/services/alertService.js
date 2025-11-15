@@ -50,7 +50,7 @@ class AlertService {
 
       return alert;
     } catch (error) {
-      console.error('❌ Error creating accident alert:', error);
+      console.error('Error creating accident alert:', error);
       throw error;
     }
   }
@@ -90,10 +90,10 @@ class AlertService {
         });
       }
 
-      console.log(`✅ Emergency alert sent for alert ${alertId}`);
+      console.log(`Emergency alert sent for alert ${alertId}`);
       return alert;
     } catch (error) {
-      console.error('❌ Error processing alert after countdown:', error);
+      console.error('Error processing alert after countdown:', error);
       throw error;
     }
   }
@@ -151,7 +151,7 @@ class AlertService {
       return result;
     } catch (error) {
       result.error = error.message;
-      console.error(`❌ Error sending notification to ${contact.phoneNumber}:`, error);
+      console.error(`Error sending notification to ${contact.phoneNumber}:`, error);
       return result;
     }
   }
@@ -211,7 +211,7 @@ class AlertService {
 
       return alert;
     } catch (error) {
-      console.error('❌ Error cancelling alert:', error);
+      console.error('Error cancelling alert:', error);
       throw error;
     }
   }
@@ -261,7 +261,7 @@ class AlertService {
 
       return alert;
     } catch (error) {
-      console.error('❌ Error updating alert location:', error);
+      console.error('Error updating alert location:', error);
       throw error;
     }
   }
