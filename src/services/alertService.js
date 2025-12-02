@@ -117,8 +117,24 @@ class AlertService {
     };
 
     try {
+      // IMPORTANT: Don't send notifications to the sender
+      if (contact.phoneNumber === user.phoneNumber) {
+        console.log(`Skipping notification - contact is the sender: ${contact.phoneNumber}`);
+        result.status = 'skipped';
+        result.error = 'Contact is the alert sender';
+        return result;
+      }
+
       // Check if contact has the app installed
       const contactUser = await User.findOne({ phoneNumber: contact.phoneNumber });
+
+      // Additional check: ensure contactUser is not the same as alert sender
+      if (contactUser && contactUser._id.toString() === user._id.toString()) {
+        console.log(`Skipping notification - contact user ID matches sender: ${contact.phoneNumber}`);
+        result.status = 'skipped';
+        result.error = 'Contact user ID matches sender';
+        return result;
+      }
 
       const alertData = {
         alertId: alert._id.toString(),
