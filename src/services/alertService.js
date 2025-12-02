@@ -75,6 +75,12 @@ class AlertService {
       const notificationResults = [];
 
       for (const contact of user.emergencyContacts) {
+        // Skip if contact phone is same as sender (shouldn't happen but safety check)
+        if (contact.phoneNumber === user.phoneNumber) {
+          console.log(`Skipping notification to self: ${contact.phoneNumber}`);
+          continue;
+        }
+
         const result = await this.sendEmergencyNotification(contact, alert, user, io);
         notificationResults.push(result);
       }
@@ -124,12 +130,16 @@ class AlertService {
         userName: user.name || 'Unknown',
       };
 
-      if (contactUser && contactUser.fcmToken) {
-        // Contact has app - send push notification
+      const contactHasApp = !!(contactUser && contactUser.fcmToken);
+      let fcmSuccess = false;
+      let smsSuccess = false;
+
+      // Try to send FCM push notification if contact has the app
+      if (contactHasApp) {
         try {
           await fcmService.sendEmergencyAlert(contactUser.fcmToken, alertData);
-          result.method = 'push';
-          result.status = 'sent';
+          fcmSuccess = true;
+          console.log(`FCM sent successfully to ${contact.phoneNumber}`);
 
           // Also send via Socket.io if online
           if (contactUser.socketId) {
@@ -139,13 +149,33 @@ class AlertService {
             });
           }
         } catch (fcmError) {
-          console.error('FCM failed, falling back to SMS:', fcmError.message);
-          // Fallback to SMS
-          await this.sendSMSFallback(contact.phoneNumber, alertData, result);
+          console.error(`FCM failed for ${contact.phoneNumber}:`, fcmError.message);
         }
+      }
+
+      // Always try to send SMS (regardless of FCM success)
+      try {
+        await smsService.sendEmergencyAlertSMS(contact.phoneNumber, alertData);
+        smsSuccess = true;
+        console.log(`SMS sent successfully to ${contact.phoneNumber}`);
+      } catch (smsError) {
+        console.error(`SMS failed for ${contact.phoneNumber}:`, smsError.message);
+      }
+
+      // Set result based on what succeeded
+      if (fcmSuccess && smsSuccess) {
+        result.method = 'push+sms';
+        result.status = 'sent';
+      } else if (fcmSuccess) {
+        result.method = 'push';
+        result.status = 'sent';
+      } else if (smsSuccess) {
+        result.method = 'sms';
+        result.status = 'sent';
       } else {
-        // Contact doesn't have app - send SMS
-        await this.sendSMSFallback(contact.phoneNumber, alertData, result);
+        result.method = contactHasApp ? 'push' : 'sms';
+        result.status = 'failed';
+        result.error = 'Both FCM and SMS failed';
       }
 
       return result;
@@ -193,13 +223,22 @@ class AlertService {
 
       // Notify emergency contacts that alert was cancelled
       for (const contact of user.emergencyContacts) {
+        // Skip if contact is the sender themselves
+        if (contact.phoneNumber === user.phoneNumber) {
+          continue;
+        }
+
         const contactUser = await User.findOne({ phoneNumber: contact.phoneNumber });
         
         if (contactUser && contactUser.fcmToken) {
-          await fcmService.sendAlertCancelled(contactUser.fcmToken, {
-            alertId: alert._id.toString(),
-            userName: user.name,
-          });
+          try {
+            await fcmService.sendAlertCancelled(contactUser.fcmToken, {
+              alertId: alert._id.toString(),
+              userName: user.name,
+            });
+          } catch (fcmError) {
+            console.error(`Failed to send cancellation FCM to ${contact.phoneNumber}:`, fcmError.message);
+          }
 
           if (contactUser.socketId) {
             io.to(contactUser.socketId).emit('emergency:cancelled', {
