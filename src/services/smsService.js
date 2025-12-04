@@ -34,12 +34,19 @@ class SMSService {
       ? `https://maps.google.com/?q=${alertData.latitude},${alertData.longitude}`
       : 'Location unavailable';
 
+    // Convert to Indian Standard Time
+    const istTime = new Date().toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+
     const message = `EMERGENCY ALERT!
 
 ${alertData.userName || 'Someone'} may have been in an accident!
 
 Severity: ${alertData.severity || 'Unknown'}
-Time: ${new Date().toLocaleString()}
+Time: ${istTime}
 Location: ${locationUrl}
 
 Please check on them immediately!
@@ -53,11 +60,18 @@ Please check on them immediately!
    * Send alert cancelled SMS
    */
   async sendAlertCancelledSMS(to, alertData) {
+    // Convert to Indian Standard Time
+    const istTime = new Date().toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+
     const message = `ALERT CANCELLED
 
 ${alertData.userName || 'User'} has cancelled the emergency alert. They are safe.
 
-Time: ${new Date().toLocaleString()}
+Time: ${istTime}
 
 - Safe Ride Alert System`;
 
